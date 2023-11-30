@@ -1,15 +1,4 @@
-package org.example;
-
-import java.util.Arrays;
-import java.util.Random;
-
-public class MatrixDeterminant {
-
-    private static int[][] matrix;
-    private static int n;
-
-    public static void main(String[] args) {
-        n = 11; // Пример размера матрицы (можно использовать любой другой размер)
+n = 15; // Пример размера матрицы (можно использовать любой другой размер)
         matrix = repetitiveRowsMatrix(n);
 
         long startTime = System.currentTimeMillis();
@@ -38,55 +27,48 @@ public class MatrixDeterminant {
     }
 
     public static int calculateDeterminant(int[][] matrix) {
-        int n = matrix.length;
+        int size = matrix.length;
 
-        if (n == 1) {
+        if (size == 1) {
             return matrix[0][0];
         }
 
-        int determinant = 0;
-
-        for (int i = 0; i < n; i++) {
-            determinant += Math.pow(-1, i) * matrix[0][i] * calculateDeterminant(minor(matrix, 0, i));
-        }
-
-        return determinant;
+        return IntStream.range(0, size)
+                .map(i -> (int) Math.pow(-1, i) * matrix[0][i] * calculateDeterminant(minor(matrix, 0, i)))
+                .sum();
     }
 
     public static int calculateDeterminantParallel(int[][] matrix) {
         DeterminantThread[] threads = new DeterminantThread[n];
-        int[] determinants = new int[n];
 
         for (int i = 0; i < n; i++) {
-            threads[i] = new DeterminantThread(i);
+            threads[i] = new DeterminantThread(i, matrix);
             threads[i].start();
         }
 
-        for (int i = 0; i < n; i++) {
+        int determinantParallel = Arrays.stream(threads)
+                .mapToInt(thread -> thread.getResult())
+                .sum();
+
+        Arrays.stream(threads).forEach(thread -> {
             try {
-                threads[i].join();
-                determinants[i] = threads[i].getResult();
+                thread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        });
 
-        int determinant = 0;
-        for (int i = 0; i < n; i++) {
-            determinant += Math.pow(-1, i) * matrix[0][i] * determinants[i];
-        }
-
-        return determinant;
+        return determinantParallel;
     }
 
     private static int[][] minor(int[][] matrix, int row, int col) {
-        int n = matrix.length;
-        int[][] minorMatrix = new int[n - 1][n - 1];
+        int size = matrix.length;
+        int[][] minorMatrix = new int[size - 1][size - 1];
 
-        for (int i = 0, k = 0; i < n; i++) {
+        for (int i = 0, k = 0; i < size; i++) {
             if (i == row) continue;
 
-            for (int j = 0, l = 0; j < n; j++) {
+            for (int j = 0, l = 0; j < size; j++) {
                 if (j == col) continue;
 
                 minorMatrix[k][l] = matrix[i][j];
@@ -101,10 +83,12 @@ public class MatrixDeterminant {
 
     static class DeterminantThread extends Thread {
         private final int rowIndex;
+        private final int[][] matrix;
         private int result;
 
-        DeterminantThread(int rowIndex) {
+        DeterminantThread(int rowIndex, int[][] matrix) {
             this.rowIndex = rowIndex;
+            this.matrix = matrix;
         }
 
         @Override
@@ -116,5 +100,3 @@ public class MatrixDeterminant {
             return result;
         }
     }
-}
-
