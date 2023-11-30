@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 public class MatrixMultiplication {
     public static void main(String[] args) {
-        int n = 499;
+        int n = 5;
         int[][] matrixA = randomMatrix(n);
         int[][] matrixB = edMatrix(n);
 
@@ -20,9 +20,29 @@ public class MatrixMultiplication {
         int[][] resultParallel = multiplyMatricesParallel(matrixA, matrixB, n);
         long parallelTime = System.currentTimeMillis() - startTime;
 
+
         System.out.println("Время однопоточного выполнения: " + singleTime + " мс");
         System.out.println("Время параллельного выполнения: " + parallelTime + " мс");
 
+
+        System.out.println("Результат однопоточного выполнения:");
+
+        for (int i = 0; i < resultSingle.length; i++) {
+            System.out.println(" ");
+            for (int j = 0; j < resultSingle.length; j++) {
+                System.out.print(resultSingle[i][j] + " ");
+            }
+        }
+
+        System.out.println();
+        System.out.println("Результат многопоточного выполнения:");
+
+        for (int i = 0; i < resultParallel.length; i++) {
+            System.out.println(" ");
+            for (int j = 0; j < resultParallel.length; j++) {
+                System.out.print(resultParallel[i][j] + " ");
+            }
+        }
     }
 
     public static int[][] randomMatrix(int n) {
